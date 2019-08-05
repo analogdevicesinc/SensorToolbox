@@ -1,13 +1,12 @@
 stages:
   - build
-  - test
   - test_hardware
   - deploy
 
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
 
-# Future branches
+# Default build
 build:master:
     tags:
      - matlab
@@ -22,13 +21,7 @@ build:master:
     artifacts:
         paths:
             - mltbx/
-     - export HDLBRANCH=
-     - export MLRELEASE=
-    allow_failure: true
-    artifacts:
-        paths:
-            - hdl/
-
+            
 # Test streaming interfaces with hardware
 test_hardware:Streaming_Hardware:
     tags:
@@ -52,10 +45,11 @@ deploy:
      - matlab
     stage: deploy
     dependencies:
-     - test_installer:2018_R2_Installer
+     - build:master
     script:
      - echo "Complete"
     artifacts:
         paths:
             - mltbx/
+
 
