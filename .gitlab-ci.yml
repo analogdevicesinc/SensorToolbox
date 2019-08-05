@@ -1,0 +1,61 @@
+stages:
+  - build
+  - test
+  - test_hardware
+  - deploy
+
+variables:
+  GIT_SUBMODULE_STRATEGY: recursive
+
+# Future branches
+build:master:
+    tags:
+     - matlab
+    stage: build
+    script:
+     - export MLRELEASE=R2019a
+     - export INCLUDE_EXAMPLES=1
+     - ./CI/scripts/dockermake gen_tlbx
+     - mkdir mltbx
+     - ls *.mltbx
+     - cp *.mltbx mltbx/
+    artifacts:
+        paths:
+            - mltbx/
+     - export HDLBRANCH=
+     - export MLRELEASE=
+    allow_failure: true
+    artifacts:
+        paths:
+            - hdl/
+
+# Test streaming interfaces with hardware
+test_hardware:Streaming_Hardware:
+    tags:
+     - matlab
+     - hardware
+    stage: test_hardware
+    dependencies:
+     - build:master
+    script:
+     - export MLRELEASE=R2019a
+     - cd CI/scripts
+     - make test_streaming
+    artifacts:
+        paths:
+            - logs/
+            - Report.pdf
+
+# Deploy
+deploy:
+    tags:
+     - matlab
+    stage: deploy
+    dependencies:
+     - test_installer:2018_R2_Installer
+    script:
+     - echo "Complete"
+    artifacts:
+        paths:
+            - mltbx/
+
