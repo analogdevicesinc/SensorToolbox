@@ -5,18 +5,19 @@ clear all; %#ok<CLALL>
 %% Setup
 % IMU
 IMU = adi.ADIS16460.Rx;
-IMU.SamplesPerFrame = 8;
+IMU.SamplesPerRead = 8;
 IMU.uri = 'ip:analog';
 IMU.SampleRate = 128;
 fs = IMU.SampleRate;
 % Filter
 ifilt = imufilter('SampleRate', fs);
 % Scopes
+N = 64;
 viewer = HelperOrientationViewer;
 ts = dsp.TimeScope;
 ts.SampleRate = fs;
 ts.TimeSpanOverrunAction = 'Scroll';
-ts.TimeSpan = 1/fs*1024;
+ts.TimeSpan = 1/fs*N;
 ts.NumInputPorts = 2;
 ts.ShowLegend = true;
 ts.ChannelNames = {'Acceleration X','Acceleration Y','Acceleration Z',...
@@ -33,7 +34,7 @@ ts_parts.ChannelNames = {'W','X','Y','Z'};
 numSamples = IMU.SamplesPerFrame;
 t = 0:1/fs:(numSamples-1)/fs;
 
-for k=1:2e2
+for k=1:N
     [acc,gyro] = IMU();
     for ii=1:size(acc,1)
         qimu = ifilt(acc(ii,:), gyro(ii,:));

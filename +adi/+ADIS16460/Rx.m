@@ -1,5 +1,6 @@
 classdef Rx < matlab.system.mixin.CustomIcon & adi.common.Rx ...
-        & matlabshared.libiio.base & adi.common.Attribute
+        & matlabshared.libiio.base & adi.common.Attribute ...
+        & adi.common.Sensor
     %RX ADIS16460 Inertial Measurement Unit
     %   The adi.ADIS16460.Rx System object is a signal source that can
     %   collect IMU data from the ADIS16460.
@@ -18,12 +19,6 @@ classdef Rx < matlab.system.mixin.CustomIcon & adi.common.Rx ...
     %   contiguous within that buffer. However, successive buffers are not.
     %
     %   <a href="https://www.analog.com/media/en/technical-documentation/data-sheets/ADIS16460.pdf">ADIS16460 Datasheet</a>        
-    properties (Nontunable)
-        %SamplesPerFrame Samples Per Frame
-        %   Number of samples per frame, specified as an even positive
-        %   integer from 2 to 16,777,216.
-        SamplesPerFrame = 1024;
-    end
     properties
         %SampleRate Sample Rate
         %   Baseband sampling rate in Hz, specified as a scalar
@@ -107,11 +102,24 @@ classdef Rx < matlab.system.mixin.CustomIcon & adi.common.Rx ...
         
     end
     
+    %% Sensor specific APIs
+    methods
+        function [accelReadings, gyroReadings, valid] = read(obj)
+            [accelReadings, gyroReadings, valid] = step(obj);
+        end
+        function flush(obj)
+            flushBuffers(obj);
+        end
+    end
+    
     %% API Functions
     methods (Hidden, Access = protected)
         
         function [accelReadings, gyroReadings, valid] = stepImpl(obj)
             [dataR, valid] = stepImpl@adi.common.Rx(obj);
+            if strcmpi(obj.ReadMode,'latest')
+               dataR = dataR(end:-1:1,:); 
+            end
             data = obj.AttributeScales.*double(dataR);
             % AngularVelocity
             gyroReadings = data(:,1:3);
@@ -121,8 +129,7 @@ classdef Rx < matlab.system.mixin.CustomIcon & adi.common.Rx ...
         end
         
         function flag = isInactivePropertyImpl(obj, prop)
-            flag = isInactivePropertyImpl@adi.common.RxTx(obj, prop);
-            flag = flag || strcmpi(prop,'EnabledChannels');
+            flag = isInactivePropertyImpl@adi.common.Sensor(obj, prop);
         end
         
         function icon = getIconImpl(obj)
@@ -135,7 +142,7 @@ classdef Rx < matlab.system.mixin.CustomIcon & adi.common.Rx ...
                 scales(c) = obj.getAttributeDouble(obj.channel_names{c},'scale',false);
             end
         end
-        
+                
         function setupInit(obj)
             obj.setDeviceAttributeRAW('current_timestamp_clock',obj.TimeStampClockSource);
             obj.setDeviceAttributeRAW('sampling_frequency',num2str(obj.SampleRate));
@@ -159,7 +166,7 @@ classdef Rx < matlab.system.mixin.CustomIcon & adi.common.Rx ...
         function bName = getDescriptiveName(~)
             bName = 'ADIS16460';
         end
-        
+
     end
 end
 
