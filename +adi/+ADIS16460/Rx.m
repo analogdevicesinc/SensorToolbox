@@ -25,10 +25,10 @@ classdef Rx < matlab.system.mixin.CustomIcon & adi.common.Rx ...
         SamplesPerFrame = 1024;
     end
     properties
-        %SamplingRate Sampling Rate
+        %SampleRate Sample Rate
         %   Baseband sampling rate in Hz, specified as a scalar
         %   in samples per second.
-        SamplingRate = 1024;
+        SampleRate = 1024;
     end
     properties (Nontunable)
         %TimeStampClockSource Time Stamp Clock Source
@@ -80,11 +80,11 @@ classdef Rx < matlab.system.mixin.CustomIcon & adi.common.Rx ...
             obj.uri = 'ip:analog';
         end
         % Check SamplingRate
-        function set.SamplingRate(obj, value)
+        function set.SampleRate(obj, value)
             validateattributes( value, { 'double','single' }, ...
                 { 'real', 'positive','scalar', 'finite', 'nonnan', 'nonempty','integer','>=',1,'<=',2048}, ...
                 '', 'SamplesPerFrame');
-            obj.SamplingRate = value;
+            obj.SampleRate = value;
             if obj.ConnectedToDevice
                 obj.setDeviceAttributeRAW('sampling_frequency',num2str(value));                
             end
@@ -138,7 +138,7 @@ classdef Rx < matlab.system.mixin.CustomIcon & adi.common.Rx ...
         
         function setupInit(obj)
             obj.setDeviceAttributeRAW('current_timestamp_clock',obj.TimeStampClockSource);
-            obj.setDeviceAttributeRAW('sampling_frequency',num2str(obj.SamplingRate));
+            obj.setDeviceAttributeRAW('sampling_frequency',num2str(obj.SampleRate));
             obj.AttributeScales = obj.setScales();
         end
         

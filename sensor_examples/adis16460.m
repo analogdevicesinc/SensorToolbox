@@ -8,7 +8,7 @@ IMU = adi.ADIS16460.Rx;
 IMU.SamplesPerFrame = 32;
 IMU.uri = 'ip:analog';
 % Filter
-fs = IMU.SamplingRate;
+fs = IMU.SampleRate;
 aFilter = imufilter('SampleRate',fs);
 
 %% Get info

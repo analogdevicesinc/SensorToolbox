@@ -7,8 +7,8 @@ clear all; %#ok<CLALL>
 IMU = adi.ADIS16460.Rx;
 IMU.SamplesPerFrame = 8;
 IMU.uri = 'ip:analog';
-IMU.SamplingRate = 128;
-fs = IMU.SamplingRate;
+IMU.SampleRate = 128;
+fs = IMU.SampleRate;
 % Filter
 ifilt = imufilter('SampleRate', fs);
 % Scopes
