@@ -130,9 +130,8 @@ classdef Rx < matlab.system.mixin.CustomIcon & adi.common.Rx ...
         end
         
         function scales = setScales(obj)
-            d = 0;
-            scales = zeros(1,length(obj.channel_names)-d);
-            for c = 1:length(obj.channel_names)-d
+            scales = zeros(1,length(obj.channel_names));
+            for c = 1:length(obj.channel_names)
                 scales(c) = obj.getAttributeDouble(obj.channel_names{c},'scale',false);
             end
         end
