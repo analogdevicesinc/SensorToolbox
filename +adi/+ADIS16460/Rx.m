@@ -30,11 +30,24 @@ classdef Rx < matlab.system.mixin.CustomIcon & adi.common.Rx ...
         %   in samples per second.
         SamplingRate = 1024;
     end
+    properties (Nontunable)
+        %TimeStampClockSource Time Stamp Clock Source
+        %   Clock source used by sensor to perform triggering and data
+        %   capture
+        TimeStampClockSource = 'realtime';
+    end
+    
     properties (Hidden, Nontunable, Access = protected)
         isOutput = false;
     end
+    
     properties (Hidden, Access = protected)
         AttributeScales
+    end
+    
+    properties(Constant, Hidden)
+        TimeStampClockSourceSet = matlab.system.StringSet({ ...
+            'realtime'});
     end
     
     properties(Nontunable, Hidden)
@@ -64,6 +77,7 @@ classdef Rx < matlab.system.mixin.CustomIcon & adi.common.Rx ...
             obj.enableExplicitPolling = false;
             obj.EnabledChannels = 1:6;%IGNORE temp0 FOR NOW
             obj.BufferTypeConversionEnable = true;
+            obj.uri = 'ip:analog';
         end
         % Check SamplingRate
         function set.SamplingRate(obj, value)
@@ -73,6 +87,13 @@ classdef Rx < matlab.system.mixin.CustomIcon & adi.common.Rx ...
             obj.SamplingRate = value;
             if obj.ConnectedToDevice
                 obj.setDeviceAttributeRAW('sampling_frequency',num2str(value));                
+            end
+        end
+        % Check TimeStampClockSource
+        function set.TimeStampClockSource(obj, value)
+            obj.TimeStampClockSource = value;
+            if obj.ConnectedToDevice
+                obj.setDeviceAttributeRAW('current_timestamp_clock',value);                
             end
         end
 
@@ -117,6 +138,7 @@ classdef Rx < matlab.system.mixin.CustomIcon & adi.common.Rx ...
         end
         
         function setupInit(obj)
+            obj.setDeviceAttributeRAW('current_timestamp_clock',obj.TimeStampClockSource);
             obj.setDeviceAttributeRAW('sampling_frequency',num2str(obj.SamplingRate));
             obj.AttributeScales = obj.setScales();
         end
