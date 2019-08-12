@@ -40,6 +40,9 @@ test_streaming:
 	cd ../.. ; \
 	${MLPATH}/$(MLRELEASE)/bin/matlab $(MLFLAGS) -r "addpath(genpath('test'));runHWTests;"
 
+gen_sim_data:
+	${MLPATH}/$(MLRELEASE)/bin/matlab $(MLFLAGS) -r "build_part_json;build_signatures;exit();"
+
 gen_tlbx:
 	${MLPATH}/$(MLRELEASE)/bin/matlab $(MLFLAGS) -r "genTlbx($(INCLUDE_EXAMPLES));exit();"
 
