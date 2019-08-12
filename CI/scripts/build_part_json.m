@@ -75,3 +75,6 @@ pause(1);
 delete data.json
 movefile('imudata.json','../../+adi/+sim/','f');
 cd(loc);
+
+%% Status
+disp('IMU data JSON packaging complete!');

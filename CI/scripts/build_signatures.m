@@ -51,3 +51,6 @@ pause(1);
 delete data.json
 movefile('functionSignatures.json','../../','f');
 cd(loc);
+
+%% Status
+disp('Signature data JSON packaging complete!');
