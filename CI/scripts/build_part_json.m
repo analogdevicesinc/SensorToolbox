@@ -14,25 +14,22 @@ parts = [];
 
 for part = 1:numParts
     %% Gyro
-    template = gyroparams;
+    templateGyro = gyroparams;
     % degrees/s -> rad/s
-    template.MeasurementRange = data.GyroInputRangemin(part)*pi/180;
-    
-    template.ConstantBias
-    
+    templateGyro.MeasurementRange = data.GyroInputRangemin(part)*pi/180;
+        
     % Degrees -> %
-    template.AxesMisalignment = sin(data.GyroAxistoAxisAlignmenttyp(part))*100;
+    templateGyro.AxesMisalignment = sin(data.GyroAxistoAxisAlignmenttyp(part))*100;
     % Degrees/s/sqrt(Hz) RMS -> Rad/s/sqrt(Hz)
-    if ~isnan(data.GyroNoiseDensitytyp(part))
-        template.NoiseDensity = data.GyroNoiseDensitytyp(part)*pi/180;
+    if isnan(data.GyroNoiseDensitytyp(part))
+        continue;
     end
+    templateGyro.NoiseDensity = data.GyroNoiseDensitytyp(part)*pi/180;
     % Degrees/hr -> rad/s
-    if ~isnan(data.GyroInRunBiasStabilitytyp(part))
-        template.BiasInstability = data.GyroInRunBiasStabilitytyp(part)*pi/180*1/3600;
+    if isnan(data.GyroInRunBiasStabilitytyp(part))
+        continue;
     end
-    
-    
-    %     template.RandomWalk = data.GyroAngularRandomWalktyp*
+    templateGyro.BiasInstability = data.GyroInRunBiasStabilitytyp(part)*pi/180*1/3600;   
     
     % Degree/sqrt(hr) = (rad/s)*sqrt(hz)
     % Degree/sqrt(hr) = (rad/s)*sqrt(1/s)
@@ -40,22 +37,40 @@ for part = 1:numParts
     % Degrees/s/sqrt(Hz) -> Degrees/sqrt(Hz)  sqrt(s/hour)
     
     % Degrees/s/g -> rad/s/(m/s^2)
-    template.AccelerationBias = data.GyroLinearGtyp(part)*pi/180*G;
+    templateGyro.AccelerationBias = data.GyroLinearGtyp(part)*pi/180*G;
     
-    %
-    %     template.Resolution
-    % GRAPHS
-    %     template.TemperatureBias = data.
-    %     template.TemperatureScaleFactor
+%     templateGyro.ConstantBias;
+%     template.Resolution
+% GRAPHS
+%     template.TemperatureBias = data.
+%     template.TemperatureScaleFactor
+%     template.RandomWalk = data.GyroAngularRandomWalktyp*
     
     
     %% Accel
+    templateAccel = accelparams;
+    
+    templateAccel.MeasurementRange = data.AccelRange(part)*G;
+    
+    
+    templateAccel.AxesMisalignment = sin(data.AccelerometerAxistoAxisAlignmenttyp(part))*100;
+    templateAccel.NoiseDensity = data.NoiseDensitytyp(part)*G;
+    templateAccel.BiasInstability = data.AccelInRunBiasStabilitytyp(part)*G;
+    
+    % 
+%     templateAccel.RandomWalk = data.AccelerometerVelocityRandomWalktyp(part)*
+    
+%     templateAccel.ConstantBias;
+%     templateAccel.Resolution
+%     templateAccel.TemperatureBias
+%     templateAccel.TemperatureScaleFactor
     
     
     %% Pack
     p = struct;
     p.PartName = data.Part(part);
-    p.gyroparams = template;
+    p.gyroparams = templateGyro;
+    p.accelparams = templateAccel;
     parts = [parts;p]; %#ok<AGROW>
     
     
