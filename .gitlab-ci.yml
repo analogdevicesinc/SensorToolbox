@@ -12,7 +12,7 @@ build:master:
      - matlab
     stage: build
     script:
-     - export MLRELEASE=R2019a
+     - export MLRELEASE=R2019b
      - export INCLUDE_EXAMPLES=1
      - ./CI/scripts/dockermake gen_sim_data
      - ./CI/scripts/dockermake gen_tlbx
@@ -35,7 +35,7 @@ test_hardware:Streaming_Hardware:
     dependencies:
      - build:master
     script:
-     - export MLRELEASE=R2019a
+     - export MLRELEASE=R2019b
      - cd CI/scripts
      - make test_streaming
     artifacts:
