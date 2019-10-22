@@ -1,24 +1,7 @@
-classdef Rx < matlab.system.mixin.CustomIcon & adi.common.Rx ...
+classdef IMUBase < matlab.system.mixin.CustomIcon & adi.common.Rx ...
         & matlabshared.libiio.base & adi.common.Attribute ...
         & adi.common.Sensor
-    %RX ADIS16460 Inertial Measurement Unit
-    %   The adi.ADIS16460.Rx System object is a signal source that can
-    %   collect IMU data from the ADIS16460.
-    %
-    %   rx = adi.ADIS16460.Rx;
-    %   rx = adi.ADIS16460.Rx('uri','ip:analog');
-    %
-    %   [accelReadings, gyroReadings, valid] = rx() produces two outputs
-    %   where accelReadings is a Nx3 matrix containing acceleration data
-    %   for x, y, and z respectively in m/s^2 where N is SamplesPerFrame.
-    %   gyroReadings is the same as accel except it contains angular
-    %   velocity data for x, y, and z in rad/s. valid is a logical to
-    %   determine if the data is valid.
-    %
-    %   Each collected measurement within a buffer is guaranteed to be
-    %   contiguous within that buffer. However, successive buffers are not.
-    %
-    %   <a href="https://www.analog.com/media/en/technical-documentation/data-sheets/ADIS16460.pdf">ADIS16460 Datasheet</a>        
+    %Base class for all IMU sensors classes    
     properties
         %SampleRate Sample Rate
         %   Baseband sampling rate in Hz, specified as a scalar
@@ -48,16 +31,12 @@ classdef Rx < matlab.system.mixin.CustomIcon & adi.common.Rx ...
     properties(Nontunable, Hidden)
         Timeout = Inf;
         kernelBuffersCount = 2;
-        dataTypeStr = 'int32';
-        phyDevName = 'adis16460';
-        devName = 'adis16460';
+%         dataTypeStr = 'int32';
+%         phyDevName = 'adis16460';
+%         devName = 'adis16460';
     end
     
     properties(Nontunable, Hidden, Constant)
-%         channel_names = {'anglvel_x','anglvel_y','anglvel_z',...
-%             'accel_x','accel_y','accel_z','temp0'};
-        channel_names = {'anglvel_x','anglvel_y','anglvel_z',...
-            'accel_x','accel_y','accel_z'};
         Type = 'Rx';
     end
     
@@ -67,7 +46,7 @@ classdef Rx < matlab.system.mixin.CustomIcon & adi.common.Rx ...
     
     methods
         %% Constructor
-        function obj = Rx(varargin)
+        function obj = IMUBase(varargin)
             obj = obj@matlabshared.libiio.base(varargin{:});
             obj.enableExplicitPolling = false;
             obj.EnabledChannels = 1:6;%IGNORE temp0 FOR NOW
@@ -104,8 +83,11 @@ classdef Rx < matlab.system.mixin.CustomIcon & adi.common.Rx ...
     
     %% Sensor specific APIs
     methods
-        function [accelReadings, gyroReadings, valid] = read(obj)
+        function [accelReadings, gyroReadings, valid] = readAccelGyro(obj)
             [accelReadings, gyroReadings, valid] = step(obj);
+        end
+        function [accelReadings, gyroReadings, magReadings, valid] = readAccelGyroMag(obj)
+            [accelReadings, gyroReadings, magReadings, valid] = step(obj);
         end
         function flush(obj)
             flushBuffers(obj);
@@ -115,8 +97,7 @@ classdef Rx < matlab.system.mixin.CustomIcon & adi.common.Rx ...
     %% API Functions
     methods (Hidden, Access = protected)
         
-        function [accelReadings, gyroReadings, valid] = stepImpl(obj)
-            [dataR, valid] = stepImpl@adi.common.Rx(obj);
+        function [accelReadings, gyroReadings] = stepAccelGyro(obj, dataR)
             if strcmpi(obj.ReadMode,'latest')
                dataR = dataR(end:-1:1,:); 
             end
@@ -128,14 +109,24 @@ classdef Rx < matlab.system.mixin.CustomIcon & adi.common.Rx ...
             %temp = data(:,7);
         end
         
+        function [accelReadings, gyroReadings, magReadings] = stepAccelGyroMag(obj, dataR)
+            if strcmpi(obj.ReadMode,'latest')
+               dataR = dataR(end:-1:1,:); 
+            end
+            data = obj.AttributeScales.*double(dataR);
+            % AngularVelocity
+            gyroReadings = data(:,1:3);
+            % Acceleration
+            accelReadings = data(:,4:6);
+            % Magnitude
+            magReadings = data(:,7:9);
+            %temp = data(:,10);
+        end
+        
         function flag = isInactivePropertyImpl(obj, prop)
             flag = isInactivePropertyImpl@adi.common.Sensor(obj, prop);
         end
-        
-        function icon = getIconImpl(obj)
-            icon = sprintf(['ADIS16460 ',obj.Type]);
-        end
-        
+               
         function scales = setScales(obj)
             scales = zeros(1,length(obj.channel_names));
             for c = 1:length(obj.channel_names)

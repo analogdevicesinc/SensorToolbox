@@ -8,7 +8,7 @@ classdef ADIS16460Tests < HardwareTests
     methods(TestClassSetup)
         % Check hardware connected
         function CheckForHardware(testCase)
-            Device = @()adi.ADIS16460.Rx;
+            Device = @()adi.ADIS16460;
             testCase.CheckDevice('ip',Device,testCase.uri(4:end),false);
         end
     end
@@ -24,10 +24,9 @@ classdef ADIS16460Tests < HardwareTests
     
     methods (Test)
         
-        function testADIS16460Rx(testCase)
-            % Test Rx DMA data output
-            rx = adi.ADIS16460.Rx('uri',testCase.uri);
-            rx.EnabledChannels = 1;
+        function testADIS16460(testCase)
+            % Test data from all sensors
+            rx = adi.ADIS16460('uri',testCase.uri);
             [out1, out2, valid] = rx();
             rx.release();
             testCase.verifyTrue(valid);

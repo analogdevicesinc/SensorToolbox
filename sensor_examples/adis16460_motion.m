@@ -4,7 +4,7 @@ clear all; %#ok<CLALL>
 
 %% Setup
 % IMU
-IMU = adi.ADIS16460.Rx;
+IMU = adi.ADIS16460;
 IMU.SamplesPerRead = 8;
 IMU.uri = 'ip:analog';
 IMU.SampleRate = 128;
