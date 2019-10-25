@@ -12,14 +12,14 @@ As with many open source packages, we use [GitHub](https://github.com/analogdevi
 
 | GitHub master status  | MATLAB Release |  Installer Package  |
 |:---------------------:|:-------:|:-------------------:|
-| [![pipeline status](https://gitlab.com/tfcollins/SensorToolbox/badges/master/pipeline.svg)](https://gitlab.com/tfcollins/SensorToolbox/commits/master) | 2019a | <a href="https://gitlab.com/tfcollins/SensorToolbox/-/jobs/artifacts/master/download?job=deploy"><img src="https://upload.wikimedia.org/wikipedia/commons/2/21/Matlab_Logo.png" data-canonical-src="https://upload.wikimedia.org/wikipedia/commons/2/21/Matlab_Logo.png" height="40" /></a>|
+| [![pipeline status](https://gitlab.com/tfcollins/SensorToolbox/badges/master/pipeline.svg)](https://gitlab.com/tfcollins/SensorToolbox/commits/master) | R2019b | <a href="https://gitlab.com/tfcollins/SensorToolbox/-/jobs/artifacts/master/download?job=deploy"><img src="https://upload.wikimedia.org/wikipedia/commons/2/21/Matlab_Logo.png" data-canonical-src="https://upload.wikimedia.org/wikipedia/commons/2/21/Matlab_Logo.png" height="40" /></a>|
 
 If you use it, and like it - please let us know. If you use it, and hate it - please let us know that too.
 
 ## Supported Tools and Releases
 
 We provide support across certain releases of MATLAB. This does not mean older releases will not work but they are not maintained. Currently supported tools are:
-- MATLAB R2019a
+- MATLAB R2019b
 
 ## Support and Documentation
 
