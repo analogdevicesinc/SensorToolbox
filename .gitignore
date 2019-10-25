@@ -1,0 +1,7 @@
+*.mlappinstall
+*.mexw64
+**/slprj/**
+*.m~
+*.json
+AD9361_Filter_Wizard/*TestFiltWiz*.m
+AD9361_Filter_Wizard/.previous_ip_addr
