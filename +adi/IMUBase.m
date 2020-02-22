@@ -52,6 +52,7 @@ classdef IMUBase < matlab.system.mixin.CustomIcon & adi.common.Rx ...
             obj.EnabledChannels = 1:6;%IGNORE temp0 FOR NOW
             obj.BufferTypeConversionEnable = true;
             obj.uri = 'ip:analog';
+            obj.Unbuffered = true;
         end
         % Check SamplingRate
         function set.SampleRate(obj, value)

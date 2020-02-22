@@ -1,21 +1,27 @@
 clear all; %#ok<CLALL>
-
+close all;
 %% ADIS16460 Example
 
 %% Setup
 % IMU
 IMU = adi.ADIS16460;
-IMU.SamplesPerRead = 32;
+IMU.SamplesPerRead = 1;
+IMU.SampleRate = 1;
 IMU.uri = 'ip:analog';
 % Filter
 fs = IMU.SampleRate;
 aFilter = imufilter('SampleRate',fs);
 
 %% Get info
-numSamples = IMU.SamplesPerFrame;
+numSamples = 100;
 t = 0:1/fs:(numSamples-1)/fs;
 
-[accelBody,gyroBody] = IMU();
+
+[accelBody,gyroBody] = deal(zeros(numSamples,3));
+for n = 1:numSamples
+    [accelBody(n,:),gyroBody(n,:)] = IMU();
+    pause(0.01);
+end
 orientation = aFilter(accelBody,gyroBody);
 
 %% Cleanup

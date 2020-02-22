@@ -5,9 +5,9 @@ clear all; %#ok<CLALL>
 %% Setup
 % IMU
 IMU = adi.ADIS16460;
-IMU.SamplesPerRead = 8;
+IMU.SamplesPerRead = 1;
 IMU.uri = 'ip:analog';
-IMU.SampleRate = 128;
+IMU.SampleRate = 1;
 fs = IMU.SampleRate;
 % Filter
 ifilt = imufilter('SampleRate', fs);
@@ -31,12 +31,18 @@ ts_parts.NumInputPorts = 4;
 ts_parts.ChannelNames = {'W','X','Y','Z'};
 
 %% Get info
-numSamples = IMU.SamplesPerFrame;
+numSamples = 10;
 t = 0:1/fs:(numSamples-1)/fs;
 
 for k=1:N
-    [acc,gyro] = IMU();
-    for ii=1:size(acc,1)
+
+    [acc,gyro] = deal(zeros(numSamples,3));
+    for n = 1:numSamples
+        [acc(n,:),gyro(n,:)] = IMU();
+        pause(0.001);
+    end
+    
+    for ii=1:1:size(acc,1)
         qimu = ifilt(acc(ii,:), gyro(ii,:));
         viewer(qimu);
         pause(0);
