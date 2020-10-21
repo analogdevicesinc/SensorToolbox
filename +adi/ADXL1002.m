@@ -50,12 +50,13 @@ classdef ADXL1002 < adi.CN0540Base
         
         function [dataR, valid] = stepImpl(obj)
             [dataR, valid] = stepImpl@adi.common.Rx(obj);
+            dataR = bitshift(dataR,-8,'int32');
         end
         
         function icon = getIconImpl(~)
             icon = sprintf('ADXL1002');
         end
-        
+
     end
         
     %% External Dependency Methods
