@@ -1,10 +1,10 @@
-classdef ADXL1002 < adi.CN0540Base
-    %ADXL1002 Low Noise, High Frequency +/-50g MEMS Accelerometer
+classdef CN0532 < adi.CN0540Base
+    % CN0532: Development board with ADXL1002 Low Noise, High Frequency +/-50g MEMS Accelerometer
     %   The adi.ADXL1002 System object is a signal source that can
     %   collect IMU data from the ADXL1002.
     %
-    %   accel = adi.ADXL1002;
-    %   accel = adi.ADXL1002('uri','ip:analog');
+    %   accel = adi.CN0532;
+    %   accel = adi.CN0532('uri','ip:analog');
     %
     %   [accelReadings, valid] = accel() produces one outputs
     %   where accelReadings
@@ -19,7 +19,7 @@ classdef ADXL1002 < adi.CN0540Base
     
     methods
         %% Constructor
-        function obj = ADXL1002(varargin)
+        function obj = CN0532(varargin)
             obj = obj@adi.CN0540Base(varargin{:});
             obj.EnabledChannels = 1;
         end
@@ -54,7 +54,7 @@ classdef ADXL1002 < adi.CN0540Base
         end
         
         function icon = getIconImpl(~)
-            icon = sprintf('ADXL1002');
+            icon = sprintf('CN0532');
         end
 
     end
@@ -62,7 +62,7 @@ classdef ADXL1002 < adi.CN0540Base
     %% External Dependency Methods
     methods (Hidden, Static)       
         function bName = getDescriptiveName(~)
-            bName = 'ADXL1002';
+            bName = 'CN0532';
         end
     end
 end

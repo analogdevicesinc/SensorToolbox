@@ -1,8 +1,8 @@
 clear all; close all;
-uri = 'ip:192.168.86.66';
+uri = 'ip:analog';
 
 %% Configure device for initialization
-xl = adi.ADXL1002();
+xl = adi.CN0532();
 xl.uri = uri;
 xl.SampleRate = '16000';
 xl.SamplesPerRead = 2^14;
