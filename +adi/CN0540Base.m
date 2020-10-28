@@ -11,11 +11,14 @@ classdef (Abstract) CN0540Base < matlab.system.mixin.CustomIcon & adi.common.Rx 
         SampleRate = '256000';
     end
     
-    properties(Nontunable)
+    properties
         %ShiftVoltageMV Shift Voltage MV
         %   DAC shift voltage use to bias ADC input. This can only be set
         %   at startup and will become read-only
         ShiftVoltageMV = NaN;
+    end
+    
+    properties (Nontunable)
         %FDAMode FDA Mode
         %   Set amplified power mode. Options are:
         %   -FullPower
@@ -105,8 +108,6 @@ classdef (Abstract) CN0540Base < matlab.system.mixin.CustomIcon & adi.common.Rx 
                 dac_scale = obj.getAttributeDouble('voltage0', 'scale', true, obj.ltc2606);
                 raw = value / (dac_scale * obj.DACBufferGain);
                 obj.setAttributeLongLong('voltage0','raw',int64(raw),true,0,obj.ltc2606);%#ok<*MCSUP>
-            else
-                error('ShiftVoltageMV cannot be set until connected to the device');
             end
             obj.ShiftVoltageMV = value;
         end
@@ -214,9 +215,15 @@ classdef (Abstract) CN0540Base < matlab.system.mixin.CustomIcon & adi.common.Rx 
             
             
             % Shift voltage
-            dac_scale = obj.getAttributeDouble('voltage0', 'scale', true, obj.ltc2606);
-            draw = obj.getAttributeDouble('voltage0', 'raw', true, obj.ltc2606);
-            obj.ShiftVoltageMV = draw * dac_scale * obj.DACBufferGain;
+            if isnan(obj.ShiftVoltageMV)
+                dac_scale = obj.getAttributeDouble('voltage0', 'scale', true, obj.ltc2606);
+                draw = obj.getAttributeDouble('voltage0', 'raw', true, obj.ltc2606);
+                obj.ShiftVoltageMV = draw * dac_scale * obj.DACBufferGain;
+            else
+                dac_scale = obj.getAttributeDouble('voltage0', 'scale', true, obj.ltc2606);
+                raw = obj.ShiftVoltageMV / (dac_scale * obj.DACBufferGain);
+                obj.setAttributeLongLong('voltage0','raw',int64(raw),true,0,obj.ltc2606);
+            end
             
             % Set
             if obj.EnableCalibration
