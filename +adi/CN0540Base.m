@@ -12,16 +12,33 @@ classdef (Abstract) CN0540Base < matlab.system.mixin.CustomIcon & adi.common.Rx 
     end
     
     properties(Nontunable)
+        %ShiftVoltageMV Shift Voltage MV
+        %   DAC shift voltage use to bias ADC input. This can only be set
+        %   at startup and will become read-only
         ShiftVoltageMV = NaN;
+        %FDAMode FDA Mode
+        %   Set amplified power mode. Options are:
+        %   -FullPower
+        %   -LowPower
         FDAMode = 'FullPower';
     end
     
     properties (Logical)
-        EnableCalibration = true;
+        %EnableCalibration Enable Calibration
+        %   Calibrate sensor voltage DC bias at startup
+        EnableCalibration = false;
+        %MonitorPowerup Monitor Powerup
+        %   Monitor ADC powerup status
         MonitorPowerup = true;
+        %FDADisableStatus FDA Disable Status
+        %   Enable amplifier status check
         FDADisableStatus = false;
-        EnableBlueLED = false;
-        EnableRedLED = false;
+        %EnableBlueLED Enable Blue LED
+        %   Enable blue LED on board
+        EnableBlueLED = true;
+        %EnableRedLED Enable Red LED
+        %   Enable red LED on board
+        EnableRedLED = true;
     end
     
     properties(Nontunable, Hidden, Constant)
@@ -222,7 +239,7 @@ classdef (Abstract) CN0540Base < matlab.system.mixin.CustomIcon & adi.common.Rx 
         end
         
         function bName = getDescriptiveName(~)
-            bName = 'ADIS16460';
+            bName = 'CN0540 Based Device';
         end
         
     end
