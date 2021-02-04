@@ -45,7 +45,7 @@ node {
     if (env.BRANCH_NAME == 'master') {
         stage('Deploy Production') {
             unstash "builtSources"
-            //uploadFTP('SensorToolbox','*.mltbx')
+            uploadFTP('SensorToolbox','*.mltbx')
         }
     }
 }
