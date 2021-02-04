@@ -2,7 +2,7 @@ classdef (Abstract) CN0540Base < matlab.system.mixin.CustomIcon & adi.common.Rx 
         & matlabshared.libiio.base & adi.common.Attribute ...
         & adi.common.Sensor
     %Base class for all CN0540 sensors classes
-    properties
+    properties (Nontunable)
         %SampleRate Sample Rate
         %   Baseband sampling rate in Hz, specified as a scalar
         %   in samples per second. Options are:
@@ -11,7 +11,7 @@ classdef (Abstract) CN0540Base < matlab.system.mixin.CustomIcon & adi.common.Rx 
         SampleRate = '256000';
     end
     
-    properties
+    properties (Nontunable)
         %ShiftVoltageMV Shift Voltage MV
         %   DAC shift voltage use to bias ADC input. This can only be set
         %   at startup and will become read-only
@@ -26,10 +26,13 @@ classdef (Abstract) CN0540Base < matlab.system.mixin.CustomIcon & adi.common.Rx 
         FDAMode = 'FullPower';
     end
     
-    properties (Logical)
+    properties (Logical, Nontunable)
         %EnableCalibration Enable Calibration
         %   Calibrate sensor voltage DC bias at startup
         EnableCalibration = false;
+    end
+        
+    properties (Logical)
         %MonitorPowerup Monitor Powerup
         %   Monitor ADC powerup status
         MonitorPowerup = true;
@@ -178,10 +181,17 @@ classdef (Abstract) CN0540Base < matlab.system.mixin.CustomIcon & adi.common.Rx 
             adc_scale = obj.getAttributeDouble('voltage0', 'scale', false);
             dac_scale = obj.getAttributeDouble('voltage0', 'scale', true, obj.ltc2606);
             
+            % Write low value first
+            dvoltage = 2000;
+            obj.setAttributeLongLong('voltage0', 'raw', int64(dvoltage), true, 0, obj.ltc2606);
+            
             for t = 1:20
                 araw = obj.getAttributeDouble('voltage0', 'raw', false);
                 draw = obj.getAttributeDouble('voltage0', 'raw', true, obj.ltc2606);
                 dvoltage = (draw * dac_scale - araw*adc_scale)/dac_scale;
+                if dvoltage > 65535
+                    dvoltage = 65535;
+                end
                 disp(araw*adc_scale)
                 obj.setAttributeLongLong('voltage0', 'raw', int64(dvoltage), true, 0, obj.ltc2606);
                 pause(0.01)
