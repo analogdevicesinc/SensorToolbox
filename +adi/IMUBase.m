@@ -89,6 +89,19 @@ classdef IMUBase < matlab.system.mixin.CustomIcon & adi.common.Rx ...
         function [accelReadings, gyroReadings, magReadings, valid] = readAccelGyroMag(obj)
             [accelReadings, gyroReadings, magReadings, valid] = step(obj);
         end
+        function [accelReadings, gyroReadings, valid] = buffread(obj,samples)
+            [accgyro,valid] = step(obj,0,samples);
+            [accelReadings, gyroReadings] = stepAccelGyro(obj, accgyro);
+        end
+        function [magReadings, valid] = chanreadMag(obj,samples)
+            [magReadings,valid] = step(obj,1,samples);
+        end
+        function [baroReadings, valid] = chanreadBaro(obj,samples)
+            [baroReadings, valid] = step(obj,2,samples);
+        end
+        function [tempReadings, valid] = chanreadTemp(obj,samples)
+            [tempReadings, valid] = step(obj,3,samples);
+        end
         function flush(obj)
             flushBuffers(obj);
         end

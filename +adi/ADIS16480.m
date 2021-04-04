@@ -26,21 +26,20 @@ classdef ADIS16480 < adi.IMUBase
     properties(Nontunable, Hidden, Constant)
         channel_names = {...
             'anglvel_x','anglvel_y','anglvel_z',...
-            'accel_x','accel_y','accel_z',...
-            'magn_x','magn_y','magn_z'};
+            'accel_x','accel_y','accel_z'};
     end
     
     methods
         %% Constructor
         function obj = ADIS16480(varargin)
             obj = obj@adi.IMUBase(varargin{:});
-            obj.EnabledChannels = 1:9;
+            obj.EnabledChannels = 1:6;
         end
     end   
     
     methods (Access=protected)
         function numOut = getNumOutputsImpl(~)
-            numOut = 4;
+            numOut = 2;
         end       
     end
     
@@ -49,14 +48,41 @@ classdef ADIS16480 < adi.IMUBase
         function [accelReadings, gyroReadings, magReadings, valid] = read(obj)
             [accelReadings, gyroReadings, magReadings, valid] = readAccelGyroMag(obj);
         end
+        function [accelReadings, gyroReadings, valid] = readAccGyro(obj,samples)
+            samples = obj.SamplesPerRead; % for syntax consistency, does not affect buffer read
+            [accelReadings, gyroReadings, valid] = buffread(obj,samples);
+        end
+        
+        function [magReadings, valid] = readMag(obj,samples)
+            [magReadings, valid] = chanreadMag(obj,samples);
+        end
+        
+        function [baroReadings, valid] = readBaro(obj,samples)
+            [baroReadings, valid] = chanreadBaro(obj,samples);
+        end
+        
+        function [tempReadings, valid] = readTemp(obj,samples)
+            [tempReadings, valid] = chanreadTemp(obj,samples);
+        end
     end
     
     %% API Functions
     methods (Hidden, Access = protected)
         
-        function [accelReadings, gyroReadings, magReadings, valid] = stepImpl(obj)
-            [dataR, valid] = stepImpl@adi.common.Rx(obj);
-            [accelReadings, gyroReadings, magReadings] = stepAccelGyroMag(obj, dataR);
+        % function [accelReadings, gyroReadings, magReadings, valid] = stepImpl(obj)
+        %     [dataR, valid] = stepImpl@adi.common.Rx(obj);
+        %     [accelReadings, gyroReadings, magReadings] = stepAccelGyroMag(obj, dataR);
+        % end
+
+        function [dataR, valid] = stepImpl(obj,stepMode,samples)
+            [dataR, valid] = stepImpl@adi.common.Rx(obj,stepMode,samples);
+        end
+
+        % Travis solution
+        function setupInit(obj)
+            trig = getDev(obj, 'adis16480-dev0');
+            iio_device_set_trigger(obj, obj.iioDev, trig);
+            setupInit@adi.IMUBase(obj); % call superclass setupInit
         end
         
         function icon = getIconImpl(~)
