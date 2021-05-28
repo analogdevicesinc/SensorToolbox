@@ -64,6 +64,43 @@ classdef ADIS16480 < adi.IMUBase
         function [tempReadings, valid] = readTemp(obj,samples)
             [tempReadings, valid] = chanreadTemp(obj,samples);
         end
+
+        function [A,b,expmfs,D,C] = calibrateMag(obj,numSamples,convert2uT,saveValues);
+            D = zeros(numSamples,3);
+
+            for ii = 1 : numSamples
+                D(ii,:) = obj.readMag(1).*convert2uT;
+                if ii == 1
+                    disp(sprintf('Calibrating magnetometer using %s samples... \nRotate sensor.', num2str(numSamples)))
+                end
+            end
+            % Calibrate data
+            [A,b,expmfs] = magcal(D);
+            C = (D-b)*A; % calibrated data
+            pause(5);
+            
+            figure()
+            plot3(D(:,1),D(:,2),D(:,3),'LineStyle','none','Marker','X','MarkerSize',8)
+            hold on
+            grid(gca,'on')
+            plot3(C(:,1),C(:,2),C(:,3),'LineStyle','none','Marker', ...
+                        'o','MarkerSize',8,'MarkerFaceColor','r') 
+            axis equal
+            xlabel('uT')
+            ylabel('uT')
+            zlabel('uT')
+            legend('Uncalibrated Samples', 'Calibrated Samples','Location', 'southoutside')
+            title("Uncalibrated vs Calibrated" + newline + "Magnetometer Measurements")
+            hold off
+
+            disp('Magnetometer calibrated.');
+
+            if saveValues
+                calibTime = clock;
+                filename = sprintf('MagCalValues-%d-%d-%d-%d.mat',calibTime(2),calibTime(3),calibTime(4),calibTime(5));
+                save(filename,'A','b','expmfs');
+            end
+        end
     end
     
     %% API Functions
