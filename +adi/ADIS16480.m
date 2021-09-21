@@ -63,6 +63,12 @@ classdef ADIS16480 < adi.IMUBase
             icon = sprintf('ADIS16480');
         end
         
+        function setupInit(obj)
+            trig = getDev(obj, 'adis16480-dev0');
+            iio_device_set_trigger(obj, obj.iioDev, trig);
+            setupInit@adi.IMUBase(obj); % call superclass setupInit
+        end
+        
     end
         
     %% External Dependency Methods
