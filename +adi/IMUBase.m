@@ -128,8 +128,8 @@ classdef IMUBase < matlab.system.mixin.CustomIcon & adi.common.Rx ...
         end
                
         function scales = setScales(obj)
-            scales = zeros(1,length(obj.channel_names));
-            for c = 1:length(obj.channel_names)
+            scales = zeros(1,length(obj.EnabledChannels));
+            for c = 1:length(obj.EnabledChannels)
                 scales(c) = obj.getAttributeDouble(obj.channel_names{c},'scale',false);
             end
         end
