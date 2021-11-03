@@ -56,7 +56,14 @@ classdef ADIS16480 < adi.IMUBase
         
         function [accelReadings, gyroReadings, magReadings, valid] = stepImpl(obj)
             [dataR, valid] = stepImpl@adi.common.Rx(obj);
-            [accelReadings, gyroReadings, magReadings] = stepAccelGyroMag(obj, dataR);
+            switch length(obj.EnabledChannels)
+                case 6
+                    [accelReadings, gyroReadings] = stepAccelGyro(obj, dataR);
+                    magReadings = null(obj.SamplesPerRead,3);
+                case 9
+                    [accelReadings, gyroReadings, magReadings] = stepAccelGyroMag(obj, dataR);
+            end
+            
         end
         
         function icon = getIconImpl(~)
