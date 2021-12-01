@@ -38,32 +38,37 @@ classdef ADIS16480 < adi.IMUBase
         end
     end   
     
-    methods (Access=protected)
-        function numOut = getNumOutputsImpl(~)
-            numOut = 4;
-        end       
-    end
+%     methods (Access=protected)%REMOVED WHILE stepImpl USES varargout
+%         function numOut = getNumOutputsImpl(~)
+%             numOut = 3;
+%         end       
+%     end
     
     %% Sensor specific APIs
     methods
-        function [accelReadings, gyroReadings, magReadings, valid] = read(obj)
-            [accelReadings, gyroReadings, magReadings, valid] = readAccelGyroMag(obj);
+        function [varargout] = read(obj)
+            if isequal(obj.EnabledChannels,1:6)
+                [accelReadings, gyroReadings, valid] = readAccelGyro(obj);
+                varargout = {accelReadings, gyroReadings, valid};
+            elseif isequal(obj.EnabledChannels,1:9)
+                [accelReadings, gyroReadings, magReadings, valid] = readAccelGyroMag(obj);
+                varargout = {accelReadings, gyroReadings, magReadings, valid};
+            end
         end
     end
     
     %% API Functions
     methods (Hidden, Access = protected)
-        
-        function [accelReadings, gyroReadings, magReadings, valid] = stepImpl(obj)
+
+        function [varargout] = stepImpl(obj)
             [dataR, valid] = stepImpl@adi.common.Rx(obj);
-            switch length(obj.EnabledChannels)
-                case 6
-                    [accelReadings, gyroReadings] = stepAccelGyro(obj, dataR);
-                    magReadings = null(obj.SamplesPerRead,3);
-                case 9
-                    [accelReadings, gyroReadings, magReadings] = stepAccelGyroMag(obj, dataR);
+            if isequal(obj.EnabledChannels,1:6)
+                [accelReadings, gyroReadings] = stepAccelGyro(obj, dataR);
+                varargout = {accelReadings, gyroReadings, valid};
+            elseif isequal(obj.EnabledChannels,1:9)
+                [accelReadings, gyroReadings, magReadings] = stepAccelGyroMag(obj, dataR);
+                varargout = {accelReadings, gyroReadings, magReadings, valid};
             end
-            
         end
         
         function icon = getIconImpl(~)
