@@ -15,22 +15,24 @@ ifilt = imufilter('SampleRate', fs);
 % Scopes
 N = 500;
 viewer = HelperOrientationViewer;
-% ts = dsp.TimeScope;
-% ts.SampleRate = fs;
-% ts.TimeSpanOverrunAction = 'Scroll';
-% ts.TimeSpan = 1/fs*N;
-% ts.NumInputPorts = 2;
-% ts.ShowLegend = true;
-% ts.ChannelNames = {'Acceleration X','Acceleration Y','Acceleration Z',...
-%     'Angular Velocity X','Angular Velocity Y','Angular Velocity Z'};
-% ts.ShowGrid = true;
-% ts.LayoutDimensions = [2 ,1];
-% ts.AxesScaling = 'Auto';
-% ts_parts = clone(ts);
-% ts_parts.LayoutDimensions = [1 ,1];
-% ts_parts.NumInputPorts = 4;
-% ts_parts.ChannelNames = {'W','X','Y','Z'};
-
+useScope = true;
+if useScope
+    ts = dsp.TimeScope;
+    ts.SampleRate = fs;
+    ts.TimeSpanOverrunAction = 'Scroll';
+    ts.TimeSpan = 1/fs*N;
+    ts.NumInputPorts = 2;
+    ts.ShowLegend = true;
+    ts.ChannelNames = {'Acceleration X','Acceleration Y','Acceleration Z',...
+        'Angular Velocity X','Angular Velocity Y','Angular Velocity Z'};
+    ts.ShowGrid = true;
+    ts.LayoutDimensions = [2 ,1];
+    ts.AxesScaling = 'Auto';
+    ts_parts = clone(ts);
+    ts_parts.LayoutDimensions = [1 ,1];
+    ts_parts.NumInputPorts = 4;
+    ts_parts.ChannelNames = {'W','X','Y','Z'};
+end
 %% Get info
 numSamples = IMU.SamplesPerFrame;
 t = 0:1/fs:(numSamples-1)/fs;
@@ -42,9 +44,11 @@ for k=1:N
         viewer(qimu);
         pause(0);
     end
-%     ts(acc(ii,:), gyro(ii,:));
-    [w,x,y,z] = qimu.parts;
-%     ts_parts(w,x,y,z);
+    if useScope
+        ts(acc(ii,:), gyro(ii,:));
+        [w,x,y,z] = qimu.parts;
+        ts_parts(w,x,y,z);
+    end
 end
 
 %% Cleanup
