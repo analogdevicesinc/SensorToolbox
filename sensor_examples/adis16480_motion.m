@@ -55,4 +55,6 @@ end
 release(ifilt);
 release(IMU);
 release(viewer);
-% release(ts);
+if useScope
+    release(ts);
+end
