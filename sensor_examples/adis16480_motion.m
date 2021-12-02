@@ -1,18 +1,19 @@
 clear all; %#ok<CLALL>
 
-%% ADIS16460 Motion Example
+%% ADIS16480 Motion Example
 
 %% Setup
 % IMU
-IMU = adi.ADIS16460;
+IMU = adi.ADIS16480;
 IMU.SamplesPerRead = 8;
 IMU.uri = 'ip:analog';
 IMU.SampleRate = 128;
+IMU.EnabledChannels = 1:6;
 fs = IMU.SampleRate;
 % Filter
 ifilt = imufilter('SampleRate', fs);
 % Scopes
-N = 64;
+N = 500;
 viewer = HelperOrientationViewer;
 useScope = true;
 if useScope
