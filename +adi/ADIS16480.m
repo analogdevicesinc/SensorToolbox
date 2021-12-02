@@ -38,12 +38,6 @@ classdef ADIS16480 < adi.IMUBase
         end
     end   
     
-%     methods (Access=protected)%REMOVED WHILE stepImpl USES varargout
-%         function numOut = getNumOutputsImpl(~)
-%             numOut = 3;
-%         end       
-%     end
-    
     %% Sensor specific APIs
     methods
         function [varargout] = read(obj)
