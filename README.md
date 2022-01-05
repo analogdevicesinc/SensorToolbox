@@ -12,14 +12,15 @@ As with many open source packages, we use [GitHub](https://github.com/analogdevi
 
 | MATLAB Release |  Installer Package  |
 |:--------------:|:-------------------:|
-| R2020a         | <a href="http://swdownloads.analog.com/cse/toolboxes/sensor/master/AnalogDevicesSensorToolbox_v20.1.1.mltbx"><img src="https://upload.wikimedia.org/wikipedia/commons/2/21/Matlab_Logo.png" data-canonical-src="https://upload.wikimedia.org/wikipedia/commons/2/21/Matlab_Logo.png" height="40" /></a>|
+| R2021a         | <a href="http://swdownloads.analog.com/cse/toolboxes/sensor/master/AnalogDevicesSensorToolbox_v21.1.1.mltbx"><img src="https://upload.wikimedia.org/wikipedia/commons/2/21/Matlab_Logo.png" data-canonical-src="https://upload.wikimedia.org/wikipedia/commons/2/21/Matlab_Logo.png" height="40" /></a>|
 
 If you use it, and like it - please let us know. If you use it, and hate it - please let us know that too.
 
 ## Supported Tools and Releases
 
 We provide support across certain releases of MATLAB. This does not mean older releases will not work but they are not maintained. Currently supported tools are:
-- MATLAB R2020a
+- Bug fixes only: MATLAB R2020a
+- Bug fixes and new features: MATLAB R2021a
 
 ## Support and Documentation
 
