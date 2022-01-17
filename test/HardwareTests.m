@@ -35,6 +35,9 @@ classdef HardwareTests < matlab.unittest.TestCase
                 if istx
                     d(complex(randn(1024,1),randn(1024,1)));
                 else
+                    if strcmp(class(d),'adi.ADIS16480')
+                        d.EnabledChannels = 1:6;
+                    end
                     d();
                 end
                 
