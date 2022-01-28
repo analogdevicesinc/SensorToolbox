@@ -91,7 +91,7 @@ classdef (Abstract) CN0540Base < matlab.system.mixin.CustomIcon & adi.common.Rx 
     properties (Hidden)
         gpio;
         ltc2606;
-        ltc2308;
+        % ltc2308;
     end
     
     methods
@@ -146,13 +146,13 @@ classdef (Abstract) CN0540Base < matlab.system.mixin.CustomIcon & adi.common.Rx 
         function set.EnableBlueLED(obj, value)
             obj.EnableBlueLED = value;
             if obj.ConnectedToDevice
-                obj.setAttributeBool('voltage0','raw',value,true,obj.gpio);%#ok<*MCSUP>
+                obj.setAttributeBool('voltage1','raw',value,true,obj.gpio);%#ok<*MCSUP>
             end
         end
         function set.EnableRedLED(obj, value)
             obj.EnableRedLED = value;
             if obj.ConnectedToDevice
-                obj.setAttributeBool('voltage1','raw',value,true,obj.gpio);%#ok<*MCSUP>
+                obj.setAttributeBool('voltage0','raw',value,true,obj.gpio);%#ok<*MCSUP>
             end
         end
     end
@@ -192,7 +192,7 @@ classdef (Abstract) CN0540Base < matlab.system.mixin.CustomIcon & adi.common.Rx 
                 if dvoltage > 65535
                     dvoltage = 65535;
                 end
-                disp(araw*adc_scale)
+                disp(araw*adc_scale);
                 obj.setAttributeLongLong('voltage0', 'raw', int64(dvoltage), true, 0, obj.ltc2606);
                 pause(0.01)
             end
@@ -209,7 +209,7 @@ classdef (Abstract) CN0540Base < matlab.system.mixin.CustomIcon & adi.common.Rx 
             % Get additional devices
             obj.gpio = getDev(obj, 'one-bit-adc-dac');
             obj.ltc2606 = getDev(obj, 'ltc2606');
-            obj.ltc2308 = getDev(obj, 'ltc2308');
+%             obj.ltc2308 = getDev(obj, 'ltc2308');
             
             obj.setDeviceAttributeRAW('common_mode_voltage',obj.CommonModeVoltage);
             obj.setDeviceAttributeRAW('sampling_frequency',num2str(obj.SampleRate));

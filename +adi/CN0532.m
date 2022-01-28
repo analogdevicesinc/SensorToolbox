@@ -34,7 +34,7 @@ classdef CN0532 < adi.CN0540Base
     
     methods (Access=protected)
         function numOut = getNumOutputsImpl(~)
-            numOut = 1;
+            numOut = 2;
         end       
     end
     
