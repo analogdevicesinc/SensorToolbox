@@ -17,10 +17,12 @@ function runHWTests(board)
             at = 'ADIS16460';
         case "adis16480bmlz"
             at = 'ADIS16480';
+        case "cn0532"
+            at = 'CN0532';
         otherwise
             error('%s unsupported for HW test harness', board)
     end
-    ats = {'ADIS16460Tests','ADIS16480Tests'};
+    ats = {'ADIS16460Tests','ADIS16480Tests','CN0532Tests','CN0540Tests'};
 
     if nargin == 0
         suite = testsuite(ats);
@@ -51,6 +53,6 @@ function runHWTests(board)
         exit(1);
     end
     save(['BSPTest_',datestr(now,'dd_mm_yyyy-HH_MM_SS'),'.mat'],'t');
-    bdclose('all');
-    exit(any([results.Failed]));
+%     bdclose('all');
+%     exit(any([results.Failed]));
 end
