@@ -4,7 +4,6 @@ lock(label: 'adgt_test_harness_boards') {
     def hdlBranch = "NA"
     def linuxBranch = "NA"
     def bootPartitionBranch = "release"
-    def firmwareVersion = 'v0.32'
     def bootfile_source = 'artifactory' // options: sftp, artifactory, http, local
     def harness = getGauntlet(hdlBranch, linuxBranch, bootPartitionBranch, firmwareVersion, bootfile_source)
   
