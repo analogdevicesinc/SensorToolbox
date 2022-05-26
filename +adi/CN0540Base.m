@@ -88,7 +88,7 @@ classdef (Abstract) CN0540Base < matlab.system.mixin.CustomIcon & adi.common.Rx 
         ComplexData = false;
     end
     
-    properties (Hidden)
+    properties (Hidden, Access=protected)
         gpio;
         ltc2606;
         ltc2308;

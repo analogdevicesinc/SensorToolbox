@@ -33,6 +33,11 @@ classdef CN0532 < adi.CN0540Base
     end   
     
     methods (Access=protected)
+        function varargout = getOutputDataTypeImpl(~)
+            % Return data type for each output port
+            varargout = {"int32","logical"}; %#ok<CLARRSTR>
+        end
+
         function numOut = getNumOutputsImpl(~)
             numOut = 1;
         end       
