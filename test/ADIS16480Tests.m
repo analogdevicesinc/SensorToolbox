@@ -26,8 +26,7 @@ classdef ADIS16480Tests < HardwareTests
         
         function testADIS16480(testCase)
             % Test data from acceletometer and gyroscope sensors
-            imu = adi.ADIS16480();
-            imu.uri = testCase.uri;
+            imu = adi.ADIS16480('uri',testCase.uri);
             imu.EnabledChannels = 1:6;
             [accellReadings, gyroReadings, valid] = imu();
             imu.release();
@@ -38,8 +37,7 @@ classdef ADIS16480Tests < HardwareTests
         
         function testADIS16480Gravity(testCase)
             % Verify data from accelerometer with only acceleration due to gravity
-            imu = adi.ADIS16480();
-            imu.uri = testCase.uri;
+            imu = adi.ADIS16480('uri',testCase.uri);
             imu.EnabledChannels = 1:6;
             [accelReadings, ~, valid] = imu();
             imu.release();

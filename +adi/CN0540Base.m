@@ -101,7 +101,6 @@ classdef (Abstract) CN0540Base < matlab.system.mixin.CustomIcon & adi.common.Rx 
             obj.enableExplicitPolling = false;
             obj.EnabledChannels = 1;
             obj.BufferTypeConversionEnable = true;
-            obj.uri = 'ip:analog';
         end
         function flush(obj)
             flushBuffers(obj);

@@ -51,7 +51,6 @@ classdef IMUBase < matlab.system.mixin.CustomIcon & adi.common.Rx ...
             obj.enableExplicitPolling = false;
             obj.EnabledChannels = 1:6;%IGNORE temp0 FOR NOW
             obj.BufferTypeConversionEnable = true;
-            obj.uri = 'ip:analog';
         end
         % Check SamplingRate
         function set.SampleRate(obj, value)
