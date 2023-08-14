@@ -1,6 +1,7 @@
 clear all; %#ok<CLALL>
 
 %% ADIS16460 Motion Example
+% This example uses the HelperOrientationViewer demo from the Navigation and Sensor Fusion Toolbox
 
 %% Setup
 % IMU
