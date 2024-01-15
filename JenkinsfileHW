@@ -3,18 +3,20 @@ lock(label: 'adgt_test_harness_boards') {
     @Library('sdgtt-lib@rpi-support') _ // Not necessary when we turn on global libraries :)
     def hdlBranch = "NA"
     def linuxBranch = "NA"
-    def bootPartitionBranch = "release"
+    def bootPartitionBranch = "2021_r2"
     def bootfile_source = 'artifactory' // options: sftp, artifactory, http, local
     def harness = getGauntlet(hdlBranch, linuxBranch, bootPartitionBranch, firmwareVersion, bootfile_source)
   
-    //Udpate repos
-    harness.set_env('nebula_repo', 'https://github.com/sdgtt/nebula.git')
+    //Update repos
+    harness.set_env('libiio_repo', 'http://gateway.englab:3000/mirrors/libiio.git')
+    harness.set_env('libiio_branch', 'v0.25')
+    harness.set_env('nebula_repo', 'http://gateway.englab:3000/mirrors/nebula.git')
     harness.set_env('nebula_branch','rpi-support')
     harness.set_env('nebula_config_branch','rpi-support')
-    harness.set_env('libiio_branch', 'v0.23')
-    harness.set_env('telemetry_repo', 'https://github.com/sdgtt/telemetry.git')
-    harness.set_env('telemetry_branch', 'master')
-    harness.set_env('matlab_release','R2021b')
+    // harness.set_env('telemetry_repo', 'http://gateway.englab:3000/mirrors/telemetry.git')
+    // harness.set_env('telemetry_branch', 'master')
+    harness.set_env('matlab_license','network')
+    harness.set_matlab_timeout('8m')
   
     //Update agent with required deps
     harness.set_required_agent(["sdg-nuc-01"])
