@@ -26,8 +26,6 @@ lock(label: 'adgt_test_harness_boards') {
     harness.set_docker_host_mode(false)
     harness.set_send_telemetry(false)
     harness.set_enable_resource_queuing(true)
-    harness.set_lock_agent(true) // Required for MATLAB toolbox tests
-    harness.set_elastic_server('192.168.10.1')
     harness.set_required_hardware(["adis16480bmlz"])
     harness.set_docker_args(['Vivado', 'MATLAB'])
     harness.set_nebula_local_fs_source_root("artifactory.analog.com")
