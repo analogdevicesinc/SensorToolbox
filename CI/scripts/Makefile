@@ -8,7 +8,7 @@ SHELL := /bin/bash
 MLFLAGS := -nodisplay -nodesktop -nosplash
 
 ifeq ($(MLRELEASE),)
-MLRELEASE := R2021b
+MLRELEASE := R2023b
 endif
 
 ifeq ($(OS),Windows_NT)
@@ -17,7 +17,7 @@ MLFLAGS := $(MLFLAGS) -wait
 else
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Linux)
-MLPATH := /usr/local/MATLAB
+MLPATH := /opt/MATLAB
 endif
 ifeq ($(UNAME_S),Darwin)
 MLPATH := /Applications

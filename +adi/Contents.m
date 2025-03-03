@@ -1,5 +1,5 @@
 % Analog Devices, Inc. Sensor Toolbox
-% Version 21.2.1 (R2021b)
+% Version 23.2.1 (R2023b)
 %
 % ==== Table of Contents (TOC) ====
 %
