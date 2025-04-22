@@ -1,46 +1,257 @@
 // Pipeline
-lock(label: 'adgt_test_harness_boards') {
-    @Library('sdgtt-lib@rpi-support') _ // Not necessary when we turn on global libraries :)
+lock(label: 'adgt_test_harness_boards', quantity: 1){
+    @Library('sdgtt-lib@adgt-test-harness') _ // Not necessary when we turn on global libraries :)
     def hdlBranch = "NA"
     def linuxBranch = "NA"
-    def bootPartitionBranch = "release"
+    def bootPartitionBranch = "2023_r2"
     def bootfile_source = 'artifactory' // options: sftp, artifactory, http, local
     def harness = getGauntlet(hdlBranch, linuxBranch, bootPartitionBranch, firmwareVersion, bootfile_source)
   
-    //Udpate repos
-    harness.set_env('nebula_repo', 'https://github.com/sdgtt/nebula.git')
-    harness.set_env('nebula_branch','rpi-support')
-    harness.set_env('nebula_config_branch','rpi-support')
-    harness.set_env('libiio_branch', 'v0.23')
-    harness.set_env('telemetry_repo', 'https://github.com/sdgtt/telemetry.git')
-    harness.set_env('telemetry_branch', 'master')
+    // Boot files
+    def source_root = "artifactory.analog.com"
+    def source = "artifactory"
+    def branch = "rpi-6.1.y"
+    def filetype = "rpi"
+    def yamlfilename = "/etc/default/nebula"
+    def backup_loc = "backup"        
+    def config = "config.txt"
+
+    // Jenkins credentials to read artifacts
+    harness.set_env('credentials_id','jenkins_credentials')
+
+    //Update repos
+    harness.set_env('nebula_repo','http://gateway.englab:3000/mirrors/nebula.git')
+    harness.set_env('nebula_branch','main')
+    harness.set_env('libiio_repo','http://gateway.englab:3000/mirrors/libiio.git')
+    harness.set_env('libiio_branch','v0.25')
+    harness.set_env('telemetry_repo','http://gateway.englab:3000/mirrors/telemetry.git')
+    harness.set_env('telemetry_branch','master')
+    harness.set_env('nebula_config_repo','http://gateway.englab:3000/mirrors/nebula-config.git')
+    harness.set_env('matlab_repo','https://github.com/analogdevicesinc/SensorToolbox.git')
     harness.set_env('matlab_release','R2023b')
   
-    //Update agent with required deps
-    harness.set_required_agent(["sdg-nuc-01"])
+    //Update nebula config from netbox
+    harness.set_update_nebula_config(true)
+    harness.set_env('nebula_config_source','netbox')
+    harness.set_env('netbox_ip','primary.englab')
+    harness.set_env('netbox_port','8000')
+    harness.set_env('netbox_base_url','netbox')
+    harness.set_env('netbox_token','0123456789abcdef0123456789abcdef01234567')
+    harness.set_env('netbox_devices_tag','rpi-6-1-y')
+    harness.set_env('netbox_devices_role','rpi-dut-card')
+    harness.set_env('netbox_nebula_template','template_rpi_gen.yaml')
+    //update first the agent with the required deps
+    harness.set_required_agent(["sdg-nuc-03"])
+    harness.set_env('update_container_lib',true)
+    harness.set_env('update_lib_requirements',true)
     harness.update_agents()
   
     //Set other test parameters
     harness.set_nebula_debug(true)
     harness.set_enable_docker(true)
-    harness.set_docker_host_mode(false)
+    harness.set_docker_host_mode(true)
     harness.set_send_telemetry(false)
+    harness.set_log_artifacts(false)
     harness.set_enable_resource_queuing(true)
     harness.set_required_hardware(["adis16480bmlz"])
-    harness.set_docker_args(['Vivado', 'MATLAB'])
+    harness.set_docker_args(['images', 'udev', 'MATLAB'])
     harness.set_nebula_local_fs_source_root("artifactory.analog.com")
   
-    // Set stages (Stages are run sequentially on agents.)
-    // harness.add_stage(harness.stage_library("UpdateBOOTFiles"), 'stopWhenFail',
-    //                   harness.stage_library("RecoverBoard"))
+    def power_down = { String board ->
+        stage("Power Down boards"){
+            echo "Powering down ${board}"
+            def pdu_type = harness.nebula('update-config pdu-config pdu_type --board-name='+board)
+            def pdu_ip = harness.nebula('update-config pdu-config pduip --board-name='+board)
+            def outlet = harness.nebula('update-config pdu-config outlet --board-name='+board)
+            harness.nebula("pdu.power-onoff --pdutype ${pdu_type} --pduip ${pdu_ip} --outlet ${outlet} --onoff off --board-name ${board}")
+        }
+    }
+
+    def power_up= { String board ->
+        stage("Power up boards"){
+            echo "Powering up ${board}"
+            def pdu_type = harness.nebula('update-config pdu-config pdu_type --board-name='+board)
+            def pdu_ip = harness.nebula('update-config pdu-config pduip --board-name='+board)
+            def outlet = harness.nebula('update-config pdu-config outlet --board-name='+board)
+            harness.nebula("pdu.power-onoff --pdutype ${pdu_type} --pduip ${pdu_ip} --outlet ${outlet} --onoff on --board-name ${board}")
+        }
+    }
+
+    def write_image = { String board ->
+        stage('Check Image'){
+            sh 'sudo apt-get install tree'
+            sh 'tree /images'
+        }
+        stage("Write Image using usb-sd-mux"){
+            echo "Writing ${sd_image} to ${board}"
+            def path = "/images/" + sd_image
+            def target_mux = harness.nebula('update-config usbmux-config target_mux --board-name='+board)
+            harness.nebula('usbsdmux.write-sdcard-image'
+                + ' --img-filename="' + path
+                + '" --board-name='+ board, true, true, false)
+        }
+        stage("Change sdcard mux mode to DUT"){
+            harness.nebula('usbsdmux.change-mux-mode'
+                + ' --mode=' + 'dut'
+                + ' --board-name='+ board, true, true, false)
+        }
+    }
+
+    def wait_for_boot = { String board ->
+        stage("Check if board booted"){
+            echo "Waiting for ${board} to boot"
+            harness.nebula('net.check-board-booted'
+                + " --board-name ${board}",
+                true, true, false) 
+        }    
+    }
+ 
+    def update_elastic_params = { String board ->
+        stage("Post Boot"){
+            echo "Updating elastic params for ${board}"
+            harness.set_elastic_field(board, 'uboot_reached', 'True')
+            harness.set_elastic_field(board, 'kernel_started', 'True')
+            harness.set_elastic_field(board, 'linux_prompt_reached', 'True')
+            harness.set_elastic_field(board, 'post_boot_failure', 'False')
+            harness.get_gitsha(board)
+        }
+    }
+
+    def update_boot_files = { String board ->
+        def devicetree_map = [:]
+        def devicetree_overlay_map = [:]
+        def kernel_map = [:]
+        def modules_map = [:]
+        def config_map = [:]
+
+        devicetree_map[board] = harness.nebula('update-config downloader-config devicetree --board-name='+board)
+        devicetree_overlay_map[board] = harness.nebula('update-config downloader-config devicetree_overlay --board-name='+board)
+        kernel_map[board] = harness.nebula('update-config downloader-config kernel --board-name='+board)
+        modules_map[board] = harness.nebula('update-config downloader-config modules --board-name='+board)
+        config_map[board] = harness.nebula('update-config board-config dtoverlay-config --board-name='+board)
+
+        power_down.call(board)
+        stage("Download boot files"){
+            echo "Downloading boot files for ${board}"
+            harness.nebula('dl.bootfiles'
+                + " --source-root ${source_root}"
+                + " --source ${source}"
+                + " --branch ${branch}"
+                + " --filetype ${filetype}"
+                + " --yamlfilename ${yamlfilename}"
+                + " --board-name ${board}",
+                true, true, false)
+            echo "Downloaded..."
+            dir("outs"){
+                sh 'sudo apt update && apt-get install tree && tree .'
+            }
+        }
+        stage("Backing up boot files"){
+            echo "Backing up boot files for ${board}"
+            harness.nebula('usbsdmux.backup-bootfiles'
+                + " --backup-loc ${backup_loc}"
+                + " --backup-subfolder ${board}"
+                + " --target-file ${config}"
+                + " --target-file ${devicetree_map[board]}"
+                + " --target-file overlays/${devicetree_overlay_map[board]}"
+                + " --target-file ${kernel_map[board]}"
+                + " --board-name ${board}",
+                true, true, false)
+            echo "Backuped..."
+            dir("${backup_loc}"){
+                sh 'sudo apt-get install tree && tree .'
+                sh "sudo cp ${board}/${config} ../outs/${config}"
+                sh "echo '${config_map[board]}' > ${board}_tmp.txt"
+                sh "sed -i 's/;/\\n/g; s/,/\\ndtparam=/g' ${board}_tmp.txt"
+                sh "sed -i 's/(comma)/,/g' ${board}_tmp.txt"
+                sh "sed -i '\$ r ${board}_tmp.txt' ../outs/${config}"
+                // sh "echo ${config_map[board]} | sed 's/;/\\n/g; s/,/\\ndtparam=/g' >> ../outs/${config}"
+                sh "cat ../outs/${config}"
+            }
+        }
+        stage("Backing up modules"){            
+            echo "Backing up modules for ${board}"
+            harness.nebula('usbsdmux.backup-bootfiles'
+                + " --partition root"
+                + " --backup-loc ${backup_loc}"
+                + " --backup-subfolder ${board}"
+                + " --target-file lib/modules/${modules_map[board]}"
+                + " --board-name ${board}",
+                true, true, false)
+            echo "Backuped..."
+            dir("${backup_loc}"){
+                sh "sudo apt-get install tree && tree ."
+            }
+        }
+        stage("Update boot files"){
+            dir("outs"){
+                echo "Updating boot files for ${board}"
+                harness.nebula('usbsdmux.update-bootfiles'
+                    + " --devicetree-overlay-config ${config}"
+                    + " --devicetree-filename ${devicetree_map[board]}"
+                    + " --devicetree-overlay-filename ${devicetree_overlay_map[board]}"
+                    + " --kernel-filename ${kernel_map[board]}"
+                    + " --no-update-dt"
+                    + " --board-name ${board}",
+                    true, true, false
+                )
+                echo "Updating modules for ${board}"
+                harness.nebula('usbsdmux.update-modules'
+                    + " --module-loc ${modules_map[board]}"
+                    + " --mux-mode dut"
+                    + " --board-name ${board}",
+                    true, true, false
+                )
+            }
+        }
+        power_up.call(board)
+        wait_for_boot.call(board)
+        update_elastic_params.call(board)
+        
+    }
+
+    def recover_board = { String board ->
+        def devicetree_map = [:]
+        def devicetree_overlay_map = [:]
+        def kernel_map = [:]
+        def modules_map = [:]
+
+        devicetree_map[board] = harness.nebula('update-config downloader-config devicetree --board-name='+board)
+        devicetree_overlay_map[board] = harness.nebula('update-config downloader-config devicetree_overlay --board-name='+board)
+        kernel_map[board] = harness.nebula('update-config downloader-config kernel --board-name='+board)
+        modules_map[board] = harness.nebula('update-config downloader-config modules --board-name='+board)
+
+        power_down.call(board)
+        stage("Revert boot files"){
+            echo "Updating boot files for ${board}"
+            dir("${backup_loc}/${board}"){
+                harness.nebula('usbsdmux.update-bootfiles'
+                    + " --devicetree-overlay-config ${config}"
+                    + " --devicetree-filename ${devicetree_map[board]}"
+                    + " --devicetree-overlay-filename ${devicetree_overlay_map[board]}"
+                    + " --kernel-filename ${kernel_map[board]}"
+                    + " --no-update-dt"
+                    + " --board-name ${board}",
+                    true, true, false
+                )
+                harness.nebula('usbsdmux.update-modules'
+                    + " --module-loc ${modules_map[board]}"
+                    + " --mux-mode dut"
+                    + " --board-name ${board}",
+                    true, true, false
+                )
+            }
+        }
+        power_up.call(board)
+        wait_for_boot.call(board)
+    }
   
     // Test stage
+    harness.add_stage(update_boot_files, 'stopWhenFail', recover_board)
     harness.set_matlab_commands(["addpath(genpath('test'))",
                                     "runHWTests(getenv('board'))"])
     harness.add_stage(harness.stage_library("MATLABTests"),'continueWhenFail')
-  
-    // Send results
-    // harness.add_stage(harness.stage_library('SendResults'),'continueWhenFail')
+    harness.add_stage(recover_board)
   
     // Go go
     harness.run_stages()
